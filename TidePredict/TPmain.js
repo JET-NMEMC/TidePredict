@@ -1,7 +1,7 @@
 var consituate = {};
 var cstlist = ["O1", "K1", "M2", "S2", "2N2", "J1", "K2", "L2", "M1", "MU2", "N2", "NU2", "OO1", "P1", "Q1", "T2"];
 var cstlist2 = ["MF", "MM", "MSF", "MSM", "MTM", "SA", "SSA"];
-var textstr;
+
 for (var i = 0; i < cstlist.length; i++) {
     document.write('<script src="TidePredict/omap/' + cstlist[i] + '.js" type="text/javascript"></script>');
 }
@@ -22,9 +22,11 @@ var now = new Date();
 document.getElementById('t1').value = format(now, "yyyy-MM-dd");
 document.getElementById('t2').value = format(new Date(now.getTime() + 1000 * 60 * 60 * 24), "yyyy-MM-dd");
 
+var textstr;
+
 var poline = L.polyline([[20, 110], [20, 165], [65, 165], [65, 110], [20, 110]]).addTo(map);
 var marker = L.marker([document.getElementById('lat').value, document.getElementById('lng').value]).addTo(map);
-run();
+// run();
 
 //地图点击时，触发
 map.on('click', function (e) {
@@ -39,10 +41,15 @@ map.on('click', function (e) {
     document.getElementById('lng').value = lng.toFixed(7);
     document.getElementById('site').value = '标记位置';
 
-    get_Consituate_baseon_coord();
-    run();
-});
+    var lng = document.getElementById('lng').value;
+    var lat = document.getElementById('lat').value;
+    document.getElementById("canshu").value = get_Consituate_baseon_coord(lng, lat);
 
+    var constituents = tableStringToArr('name amplitude	phase\n' + document.getElementById('canshu').value).objArr;
+    run(constituents);
+    plot()
+});
+//-------------------------------------------------------------------四种工作模式
 //坐标框更改时，触发
 function coordChange() {
     marker._latlng.lat = document.getElementById('lat').value;
@@ -50,15 +57,78 @@ function coordChange() {
     map.removeLayer(marker);
     map.addLayer(marker);
 
-    get_Consituate_baseon_coord();
-    run();
-}
-
-function get_Consituate_baseon_coord() {
-    // console.log(consituate);
     var lng = document.getElementById('lng').value;
     var lat = document.getElementById('lat').value;
+    document.getElementById("canshu").value = get_Consituate_baseon_coord(lng, lat);
 
+    var constituents = tableStringToArr('name amplitude	phase\n' + document.getElementById('canshu').value).objArr;
+    run(constituents);
+    plot()
+}
+
+//点击预报潮位时，触发
+function predictClick() {
+    var constituents = tableStringToArr('name amplitude	phase\n' + document.getElementById('canshu').value).objArr;
+    run(constituents);
+    plot()
+}
+
+//点击多点预报潮位时，触发
+function muti_run() {
+    var zhanweibiao = tableStringToArr('name lng	lat\n' + document.getElementById('zhanweibiao').value).objArr;
+    console.log(zhanweibiao);
+
+    var time_0 = new Date(document.getElementById('t1').value + ' 00:00');
+    var time_1 = new Date(document.getElementById('t2').value + ' 00:00');
+    var time_step = Number(document.getElementById('s0').value);
+    var phaseKey = 'phase';
+    var textrow = [];
+
+    // var time_k = time_0;
+    // var kk = 0;
+    // while (time_k <= time_1) {
+    //     textrow[kk] = formatDateTime(time_k);
+    //     kk = kk + 1;
+    //     time_k.setMinutes(time_k.getMinutes() + time_step);
+    // };
+
+
+    for (var i = 0; i < zhanweibiao.length; i++) {
+        var ConsituateStr = get_Consituate_baseon_coord(zhanweibiao[i].lng, zhanweibiao[i].lat);
+        var constituents = tableStringToArr('name amplitude	phase\n' + ConsituateStr).objArr;
+        console.log(zhanweibiao[i].name);
+
+        var time_j = time_0;
+        var mm = 0;
+        var level0 = [];
+
+        while (time_j <= time_1) {
+            // console.log("yes")
+            var waterLevel2 = tidePredictor(constituents, { phaseKey: phaseKey }).getWaterLevelAtTime({
+                time: time_j,
+            });
+            // console.log(waterLevel2.level)
+
+            level0.push(waterLevel2.level.toFixed(3));
+            // textrow[i] = level0;
+            // textrow.push(formatDateTime(waterLevel2.time) + ',' + waterLevel2.level.toFixed(3));
+            time_j.setMinutes(time_j.getMinutes() + time_step);
+            mm += 1
+        };
+        // textrow.push(level0);
+        textrow[i] = level0;
+    }
+
+    console.log(textrow)
+    // console.log(text0)
+    // console.log(textstr)
+    // textstr = text0.join('\n');
+    // textstr = "DateTime,WaterLevel(m)\n" + textstr;
+}
+
+function get_Consituate_baseon_coord(lng, lat) {
+    // console.log(consituate);
+    var ConsituateStr;
     var seek = seeknear(lng, lat, consituate, cstlist);
     // console.log(seek);
 
@@ -66,8 +136,9 @@ function get_Consituate_baseon_coord() {
     for (var i = 0; i < seek.length; i++) {
         res[i] = seek[i].join("\t")
     }
+    // console.log("res",res)
 
-    // var yesno = true;
+    // var yesno = true;是否启用第二分潮组
     var yesno = false;
     if (yesno == true) {
         var seek2 = seeknear2(lng + 180, lat, consituate, cstlist2);
@@ -76,17 +147,16 @@ function get_Consituate_baseon_coord() {
         for (var i = 0; i < seek2.length; i++) {
             res2[i] = seek2[i].join("\t")
         }
-        document.getElementById("canshu").value = res.join('\n') + '\n' + res2.join('\n');
+        ConsituateStr = res.join('\n') + '\n' + res2.join('\n');
 
     } else {
-        document.getElementById("canshu").value = res.join('\n');
-
+        ConsituateStr = res.join('\n');
     }
-    // run();
+    return ConsituateStr;
 }
 
 //-----------------------调和曲线并出图
-function run() {
+function run(constituents) {
     var time_0 = new Date(document.getElementById('t1').value + ' 00:00');
     var time_1 = new Date(document.getElementById('t2').value + ' 00:00');
     // var time_0 = new Date("2021-12-12 00:00 GMT+0800");
@@ -99,7 +169,6 @@ function run() {
 
     var text0 = [];
     textstr = '';
-    var constituents = tableStringToArr('name amplitude	phase\n' + document.getElementById('canshu').value).objArr;
 
     var time_j = time_0;
 
@@ -108,16 +177,50 @@ function run() {
             time: time_j,
         });
         text0.push(formatDateTime(waterLevel.time) + ',' + waterLevel.level.toFixed(3));
-        time_j.setMinutes(time_j.getMinutes() + time_step)
+        time_j.setMinutes(time_j.getMinutes() + time_step);
     };
+    // console.log(text0);
     textstr = text0.join('\n');
 
     textstr = "DateTime,WaterLevel(m)\n" + textstr;
     document.getElementById('text').innerHTML = textstr;
+}
 
+//-----------------------多点调和曲线写入
+function run2(constituents) {
+    var time_0 = new Date(document.getElementById('t1').value + ' 00:00');
+    var time_1 = new Date(document.getElementById('t2').value + ' 00:00');
+    // var time_0 = new Date("2021-12-12 00:00 GMT+0800");
+    // var time_1 = new Date("2021-12-14 00:00 GMT+0800");
+    var time_step = Number(document.getElementById('s0').value);
+    var phaseKey = 'phase';
+    // var phaseKey = 'phase_GMT';
+    console.log("time start:", time_0);
+    console.log("time  end :", time_1);
+
+    var text0 = [];
+    textstr = '';
+
+    var time_j = time_0;
+
+    while (time_j <= time_1) {
+        var waterLevel = tidePredictor(constituents, { phaseKey: phaseKey }).getWaterLevelAtTime({
+            time: time_j,
+        });
+        text0.push(formatDateTime(waterLevel.time) + ',' + waterLevel.level.toFixed(3));
+        time_j.setMinutes(time_j.getMinutes() + time_step);
+    };
+    console.log(text0);
+    textstr = text0.join('\n');
+
+    textstr = "DateTime,WaterLevel(m)\n" + textstr;
+    document.getElementById('text').innerHTML = textstr;
+}
+
+function plot() {
     //绘制图表
     var g = new Dygraph(
-        document.getElementById("graphdiv"), 
+        document.getElementById("graphdiv"),
         textstr,
         {
             // legend: 'always',
@@ -203,7 +306,7 @@ function mn2latlng(m, n) {
     return ((ymax - m * dy) + ',' + (n * dx + xmin))
 }
 
-//------------寻找最近的可用的数据位置，并返回该位置的调和常数
+//------------寻找最近的可用的数据位置，并返回该位置的调和常数,未启用，适用第二组分潮
 function seeknear2(lng, lat, obj, list) {
     var xmin = 0.25;
     var xmax = 359.75; //55 经度
