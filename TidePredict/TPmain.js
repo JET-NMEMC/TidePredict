@@ -72,17 +72,17 @@ function predictClick() {
     run(constituents);
     plot()
 }
-
+var textrow = [];
 //点击多点预报潮位时，触发
 function muti_run() {
     var zhanweibiao = tableStringToArr('name lng	lat\n' + document.getElementById('zhanweibiao').value).objArr;
     console.log(zhanweibiao);
 
-    var time_0 = new Date(document.getElementById('t1').value + ' 00:00');
-    var time_1 = new Date(document.getElementById('t2').value + ' 00:00');
-    var time_step = Number(document.getElementById('s0').value);
-    var phaseKey = 'phase';
-    var textrow = [];
+    // var time_0 = new Date(document.getElementById('t1').value + ' 00:00');
+    // var time_1 = new Date(document.getElementById('t2').value + ' 00:00');
+    // var time_step = Number(document.getElementById('s0').value);
+    // var phaseKey = 'phase';
+    
 
     // var time_k = time_0;
     // var kk = 0;
@@ -97,33 +97,39 @@ function muti_run() {
         var ConsituateStr = get_Consituate_baseon_coord(zhanweibiao[i].lng, zhanweibiao[i].lat);
         var constituents = tableStringToArr('name amplitude	phase\n' + ConsituateStr).objArr;
         console.log(zhanweibiao[i].name);
+        var tidal = run2(constituents);
+        var levels = tidal.waterlevels;
+        var timeserial = tidal.timeserial;
+        console.log(levels);
 
-        var time_j = time_0;
-        var mm = 0;
-        var level0 = [];
+        // timetimeserial:timeserial,
+        // waterlevels:text0
 
-        while (time_j <= time_1) {
-            // console.log("yes")
-            var waterLevel2 = tidePredictor(constituents, { phaseKey: phaseKey }).getWaterLevelAtTime({
-                time: time_j,
-            });
-            // console.log(waterLevel2.level)
+        //     var time_j = time_0;
+        //     var mm = 0;
+        //     var level0 = [];
 
-            level0.push(waterLevel2.level.toFixed(3));
-            // textrow[i] = level0;
-            // textrow.push(formatDateTime(waterLevel2.time) + ',' + waterLevel2.level.toFixed(3));
-            time_j.setMinutes(time_j.getMinutes() + time_step);
-            mm += 1
-        };
-        // textrow.push(level0);
-        textrow[i] = level0;
+        //     while (time_j <= time_1) {
+        //         // console.log("yes")
+        //         var waterLevel2 = tidePredictor(constituents, { phaseKey: phaseKey }).getWaterLevelAtTime({
+        //             time: time_j,
+        //         });  
+
+        //         level0.push(waterLevel2.level.toFixed(3));
+        //         // textrow[i] = level0;
+        //         // textrow.push(formatDateTime(waterLevel2.time) + ',' + waterLevel2.level.toFixed(3));
+        //         time_j.setMinutes(time_j.getMinutes() + time_step);
+        //         mm += 1
+        //     };
+        //     // textrow.push(level0);
+        //     textrow[i] = level0;
+    }
+    for (var i = 0; i < levels.length; i++) {
+        var ele = textrow[i];
+        textrow[i] = ele + "," + levels[i]
     }
 
     console.log(textrow)
-    // console.log(text0)
-    // console.log(textstr)
-    // textstr = text0.join('\n');
-    // textstr = "DateTime,WaterLevel(m)\n" + textstr;
 }
 
 function get_Consituate_baseon_coord(lng, lat) {
@@ -199,6 +205,7 @@ function run2(constituents) {
     console.log("time  end :", time_1);
 
     var text0 = [];
+    var timeserial = [];
     textstr = '';
 
     var time_j = time_0;
@@ -207,14 +214,20 @@ function run2(constituents) {
         var waterLevel = tidePredictor(constituents, { phaseKey: phaseKey }).getWaterLevelAtTime({
             time: time_j,
         });
-        text0.push(formatDateTime(waterLevel.time) + ',' + waterLevel.level.toFixed(3));
+        text0.push(waterLevel.level.toFixed(3));
+        timeserial.push(formatDateTime(waterLevel.time));
+        textrow.push(formatDateTime(waterLevel.time));
         time_j.setMinutes(time_j.getMinutes() + time_step);
     };
-    console.log(text0);
-    textstr = text0.join('\n');
+    // console.log(text0);
+    // textstr = text0.join('\n');
 
-    textstr = "DateTime,WaterLevel(m)\n" + textstr;
-    document.getElementById('text').innerHTML = textstr;
+    // textstr = "DateTime,WaterLevel(m)\n" + textstr;
+    // document.getElementById('text').innerHTML = textstr;
+    return {
+        timeserial: timeserial,
+        waterlevels: text0
+    }
 }
 
 function plot() {
