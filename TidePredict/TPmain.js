@@ -72,64 +72,35 @@ function predictClick() {
     run(constituents);
     plot()
 }
-var textrow = [];
+//定义全局变量存放多点潮位序列
+var textrow;
 //点击多点预报潮位时，触发
 function muti_run() {
+
     var zhanweibiao = tableStringToArr('name lng	lat\n' + document.getElementById('zhanweibiao').value).objArr;
-    console.log(zhanweibiao);
-
-    // var time_0 = new Date(document.getElementById('t1').value + ' 00:00');
-    // var time_1 = new Date(document.getElementById('t2').value + ' 00:00');
-    // var time_step = Number(document.getElementById('s0').value);
-    // var phaseKey = 'phase';
-    
-
-    // var time_k = time_0;
-    // var kk = 0;
-    // while (time_k <= time_1) {
-    //     textrow[kk] = formatDateTime(time_k);
-    //     kk = kk + 1;
-    //     time_k.setMinutes(time_k.getMinutes() + time_step);
-    // };
-
+    // console.log(zhanweibiao);
 
     for (var i = 0; i < zhanweibiao.length; i++) {
+        console.log(zhanweibiao[i].name);
+
         var ConsituateStr = get_Consituate_baseon_coord(zhanweibiao[i].lng, zhanweibiao[i].lat);
         var constituents = tableStringToArr('name amplitude	phase\n' + ConsituateStr).objArr;
-        console.log(zhanweibiao[i].name);
+
         var tidal = run2(constituents);
         var levels = tidal.waterlevels;
         var timeserial = tidal.timeserial;
-        console.log(levels);
+        if (i == 0) {
+            textrow = timeserial;
+        }
 
-        // timetimeserial:timeserial,
-        // waterlevels:text0
-
-        //     var time_j = time_0;
-        //     var mm = 0;
-        //     var level0 = [];
-
-        //     while (time_j <= time_1) {
-        //         // console.log("yes")
-        //         var waterLevel2 = tidePredictor(constituents, { phaseKey: phaseKey }).getWaterLevelAtTime({
-        //             time: time_j,
-        //         });  
-
-        //         level0.push(waterLevel2.level.toFixed(3));
-        //         // textrow[i] = level0;
-        //         // textrow.push(formatDateTime(waterLevel2.time) + ',' + waterLevel2.level.toFixed(3));
-        //         time_j.setMinutes(time_j.getMinutes() + time_step);
-        //         mm += 1
-        //     };
-        //     // textrow.push(level0);
-        //     textrow[i] = level0;
+        for (var j = 0; j < levels.length; j++) {
+            var ele = textrow[j];
+            textrow[j] = ele + "    " + levels[j]
+        }
     }
-    for (var i = 0; i < levels.length; i++) {
-        var ele = textrow[i];
-        textrow[i] = ele + "," + levels[i]
-    }
-
-    console.log(textrow)
+    console.log(textrow);
+    textstr = "DateTime,WaterLevel(m)\n" + textrow.join('\n');
+    document.getElementById('text').innerHTML = textstr;
 }
 
 function get_Consituate_baseon_coord(lng, lat) {
@@ -142,7 +113,6 @@ function get_Consituate_baseon_coord(lng, lat) {
     for (var i = 0; i < seek.length; i++) {
         res[i] = seek[i].join("\t")
     }
-    // console.log("res",res)
 
     // var yesno = true;是否启用第二分潮组
     var yesno = false;
@@ -154,7 +124,6 @@ function get_Consituate_baseon_coord(lng, lat) {
             res2[i] = seek2[i].join("\t")
         }
         ConsituateStr = res.join('\n') + '\n' + res2.join('\n');
-
     } else {
         ConsituateStr = res.join('\n');
     }
@@ -196,8 +165,7 @@ function run(constituents) {
 function run2(constituents) {
     var time_0 = new Date(document.getElementById('t1').value + ' 00:00');
     var time_1 = new Date(document.getElementById('t2').value + ' 00:00');
-    // var time_0 = new Date("2021-12-12 00:00 GMT+0800");
-    // var time_1 = new Date("2021-12-14 00:00 GMT+0800");
+
     var time_step = Number(document.getElementById('s0').value);
     var phaseKey = 'phase';
     // var phaseKey = 'phase_GMT';
@@ -216,17 +184,14 @@ function run2(constituents) {
         });
         text0.push(waterLevel.level.toFixed(3));
         timeserial.push(formatDateTime(waterLevel.time));
-        textrow.push(formatDateTime(waterLevel.time));
+        // textrow.push(formatDateTime(waterLevel.time));
         time_j.setMinutes(time_j.getMinutes() + time_step);
     };
-    // console.log(text0);
-    // textstr = text0.join('\n');
 
-    // textstr = "DateTime,WaterLevel(m)\n" + textstr;
-    // document.getElementById('text').innerHTML = textstr;
     return {
         timeserial: timeserial,
-        waterlevels: text0
+        waterlevels: text0,
+        data: timeserial
     }
 }
 
