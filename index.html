@@ -16,7 +16,7 @@
 <body>
     <div id="map" class="map"></div>
     <textarea id="text" cols="30" rows="40"
-        style="position: absolute; width:250px; height:99%; right: 0px; resize: none;"></textarea>
+        style="position: absolute; width:300px; height:99%; right: 0px; resize: none;"></textarea>
     <div style="width: 280px; border:1px solid black;background-color: rgb(240, 232, 231);">
         <h2>潮位预报系统</h2>
         <p>开始日期 <input type="date" id="t1" value="2021-12-01">
@@ -25,9 +25,10 @@
         <p>结束日期 <input type="date" id="t2" value="2021-12-02">
             <input type="number" style="width:30px;" id="h2" value="0"> 时
         </p>
-        <p>时间步长 <input type="number" style="width:130px;" id="s0" oninput="value=value.replace(/[^\d]/g,'')" value="30">分钟</p>
+        <p>时间步长 <input type="number" style="width:130px;" id="s0" oninput="value=value.replace(/[^\d]/g,'')"
+                value="30">分钟</p>
         <div style="width: 99%; background-color: rgb(78, 76, 76); text-align: center; color: beige;">单点模式</div>
-        <p>潮位站名 <input type="text" style="width:130px;" id="site" value="青岛"></p>
+        <p>潮位站名 <input type="text" style="width:130px;" id="site" value="某岛"></p>
         <p>坐标经度 <input type="text" style="width:130px;" id="lng" value="120.37091" onchange="coordChange()"></p>
         <p>坐标纬度 <input type="text" style="width:130px;" id="lat" value="36.051757" onchange="coordChange()"></p>
         <p>
@@ -43,17 +44,33 @@
         </p>
 
         <p>
-            <div style="width: 99%; background-color: rgb(78, 76, 76); text-align: center; color: beige;">多点模式</div>
-            <br>
-            <textarea id="zhanweibiao" cols="35" rows="4"
-                style="resize: none;">青岛  120.37091   36.051757&#10;大连  121.71993   38.969019</textarea>
-            <button style="height: 30px; width: 160px;" onclick="muti_run()">多点潮位预报导出</button>
+        <div style="width: 99%; background-color: rgb(78, 76, 76); text-align: center; color: beige;">多点模式（模型）</div>
+        <br>
+        <textarea id="zhanweibiao" cols="35" rows="6"
+            style="resize: none;">某岛  120.37091   36.051757&#10;某连  121.71993   38.969019</textarea>
+        <button style="height: 30px; width: 80px;" onclick="muti_run()">多点预报</button>
+        <button style="height: 30px; width: 80px;" onclick="export_csv(textstr, 'tideHeight-NAO99')">导出潮位</button>
+        </p>
+        <p>
+        <div style="width: 99%; background-color: rgb(78, 76, 76); text-align: center; color: beige;">多点模式（调和）</div>
+        <br>
+        <label style="color: blue;">站位&emsp;</label>
+        <label style="color: blue;"> M2&emsp;</label>
+        <label style="color: blue;"> S2&emsp;</label>
+        <label style="color: blue;"> K1&emsp;</label>
+        <label style="color: blue;"> O1&emsp;</label>
+
+        <textarea id="zhanweibiao2" cols="35" rows="8"
+            style="resize: none;">某岛	1.25	136	0.40	183	0.27	356	0.21	293&#10;某连	0.97	288	0.30	344	0.27	0	0.21	319</textarea>
+        <button style="height: 30px; width: 80px;" onclick="muti_run2()">多点调和</button>
+        <button style="height: 30px; width: 80px;" onclick="export_csv(textstr, 'tideHeight-NAO99')">导出潮位</button>
         </p>
     </div>
-    <p>
+
     <div id="graphdiv"
-        style="position: absolute; width: 700px; opacity: 0.7; height: 250px; background-color: cornsilk;"></div>
-    </p>
+        style="position: absolute; width: 700px; height: 250px; left:290px; bottom: 10px;opacity: 0.7; background-color: cornsilk;">
+    </div>
+
 
     <script src="TidePredict/tide-predictor.js"></script>
     <script src="TidePredict/TPmain.js"></script>
