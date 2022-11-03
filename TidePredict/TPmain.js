@@ -22,13 +22,19 @@ var now = new Date();
 document.getElementById('t1').value = format(now, "yyyy-MM-dd");
 document.getElementById('t2').value = format(new Date(now.getTime() + 1000 * 60 * 60 * 24), "yyyy-MM-dd");
 
+
+//定义全局变量存放多点潮位序列
+var textrow;
+//定义全局变量存放潮位序列字符串
 var textstr;
 
 var poline = L.polyline([[20, 110], [20, 165], [65, 165], [65, 110], [20, 110]]).addTo(map);
 var marker = L.marker([document.getElementById('lat').value, document.getElementById('lng').value]).addTo(map);
 // run();
 
-//地图点击时，触发
+
+//-------------------------------------------------------------------五种工作模式
+//(1)地图点击时，触发
 map.on('click', function (e) {
     lat = e.latlng.lat;
     lng = e.latlng.lng;
@@ -49,8 +55,9 @@ map.on('click', function (e) {
     run(constituents);
     plot()
 });
-//-------------------------------------------------------------------四种工作模式
-//坐标框更改时，触发
+
+
+//(2)坐标框更改时，触发
 function coordChange() {
     marker._latlng.lat = document.getElementById('lat').value;
     marker._latlng.lng = document.getElementById('lng').value;
@@ -66,22 +73,24 @@ function coordChange() {
     plot()
 }
 
-//点击预报潮位时，触发
+//(3)点击预报潮位时，触发
 function predictClick() {
     var constituents = tableStringToArr('name amplitude	phase\n' + document.getElementById('canshu').value).objArr;
+    console.log(constituents)
     run(constituents);
     plot()
 }
-//定义全局变量存放多点潮位序列
-var textrow;
-//点击多点预报潮位时，触发
-function muti_run() {
 
+//(4)点击多点预报潮位时，触发
+function muti_run() {
+    textrow = []
     var zhanweibiao = tableStringToArr('name lng	lat\n' + document.getElementById('zhanweibiao').value).objArr;
     // console.log(zhanweibiao);
+    var siteNames = "";
 
     for (var i = 0; i < zhanweibiao.length; i++) {
         console.log(zhanweibiao[i].name);
+        siteNames = siteNames + "   " + zhanweibiao[i].name;
 
         var ConsituateStr = get_Consituate_baseon_coord(zhanweibiao[i].lng, zhanweibiao[i].lat);
         var constituents = tableStringToArr('name amplitude	phase\n' + ConsituateStr).objArr;
@@ -98,11 +107,66 @@ function muti_run() {
             textrow[j] = ele + "    " + levels[j]
         }
     }
-    console.log(textrow);
-    textstr = "DateTime,WaterLevel(m)\n" + textrow.join('\n');
+
+    textstr = "DateTime" + siteNames + "\n" + textrow.join('\n');
     document.getElementById('text').innerHTML = textstr;
 }
 
+//(5)点击多点调和潮位时，触发
+function muti_run2() {
+    textrow = [];
+    textstr = '';
+    var siteNames = "";
+    var constituentsTable = tableStringToArr('name M2a M2p S2a S2p K1a K1p O1a O1p\n' + document.getElementById('zhanweibiao2').value).objArr;
+    console.log(constituentsTable)
+    for (var i = 0; i < constituentsTable.length; i++) {
+        console.log(constituentsTable[i].name);
+        siteNames = siteNames + "   " + constituentsTable[i].name;
+        var constituents = [
+            {
+                name: "M2",
+                amplitude: constituentsTable[i].M2a,
+                phase: constituentsTable[i].M2p
+            },
+            {
+                name: "S2",
+                amplitude: constituentsTable[i].S2a,
+                phase: constituentsTable[i].S2p
+            },
+            {
+                name: "K1",
+                amplitude: constituentsTable[i].K1a,
+                phase: constituentsTable[i].K1p
+            },
+            {
+                name: "O1",
+                amplitude: constituentsTable[i].O1a,
+                phase: constituentsTable[i].O1p
+            }
+        ]
+
+        console.log(constituents);
+        // run(constituents);
+        // plot()
+        var tidal = run2(constituents);
+        var levels = tidal.waterlevels;
+        var timeserial = tidal.timeserial;
+        if (i == 0) {
+            textrow = timeserial;
+        }
+
+        for (var j = 0; j < levels.length; j++) {
+            var ele = textrow[j];
+            textrow[j] = ele + "    " + levels[j]
+        }
+    }
+
+    textstr = "DateTime" + siteNames + "\n" + textrow.join('\n');
+    document.getElementById('text').innerHTML = textstr;
+    
+
+}
+//------------------------------------------------------以下为子程序
 function get_Consituate_baseon_coord(lng, lat) {
     // console.log(consituate);
     var ConsituateStr;
