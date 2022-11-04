@@ -17,7 +17,7 @@
     <div id="map" class="map"></div>
     <textarea id="text" cols="30" rows="40"
         style="position: absolute; width:300px; height:99%; right: 0px; resize: none;"></textarea>
-    <div style="width: 280px; border:1px solid black;background-color: rgb(240, 232, 231);">
+    <div style="width: 280px; margin:5px; padding:5px; border:1px solid black; background-color: rgb(240, 232, 231);">
         <h2>潮位预报系统</h2>
         <p>开始日期 <input type="date" id="t1" value="2021-12-01">
             <input type="number" style="width:30px;" id="h1" value="0"> 时
@@ -28,7 +28,7 @@
         <p>时间步长 <input type="number" style="width:130px;" id="s0" oninput="value=value.replace(/[^\d]/g,'')"
                 value="30">分钟</p>
         <div style="width: 99%; background-color: rgb(78, 76, 76); text-align: center; color: beige;">单点模式</div>
-        <p>潮位站名 <input type="text" style="width:130px;" id="site" value="某岛"></p>
+        <p>潮位站名 <input type="text" style="width:130px;" id="site" value="Tingdao"></p>
         <p>坐标经度 <input type="text" style="width:130px;" id="lng" value="120.37091" onchange="coordChange()"></p>
         <p>坐标纬度 <input type="text" style="width:130px;" id="lat" value="36.051757" onchange="coordChange()"></p>
         <p>
@@ -47,7 +47,7 @@
         <div style="width: 99%; background-color: rgb(78, 76, 76); text-align: center; color: beige;">多点模式（模型）</div>
         <br>
         <textarea id="zhanweibiao" cols="35" rows="6"
-            style="resize: none;">某岛  120.37091   36.051757&#10;某连  121.71993   38.969019</textarea>
+            style="resize: none;">Tingdao  120.37091   36.051757&#10;Talian  121.71993   38.969019</textarea>
         <button style="height: 30px; width: 80px;" onclick="muti_run()">多点预报</button>
         <button style="height: 30px; width: 80px;" onclick="export_csv(textstr, 'tideHeight-NAO99')">导出潮位</button>
         </p>
@@ -61,14 +61,14 @@
         <label style="color: blue;"> O1&emsp;</label>
 
         <textarea id="zhanweibiao2" cols="35" rows="8"
-            style="resize: none;">某岛	1.25	136	0.40	183	0.27	356	0.21	293&#10;某连	0.97	288	0.30	344	0.27	0	0.21	319</textarea>
+            style="resize: none;">Tingdao	1.25	136	0.40	183	0.27	356	0.21	293&#10;Talian	0.97	288	0.30	344	0.27	0	0.21	319</textarea>
         <button style="height: 30px; width: 80px;" onclick="muti_run2()">多点调和</button>
         <button style="height: 30px; width: 80px;" onclick="export_csv(textstr, 'tideHeight-NAO99')">导出潮位</button>
         </p>
     </div>
 
     <div id="graphdiv"
-        style="position: absolute; width: 700px; height: 250px; left:290px; bottom: 10px;opacity: 0.7; background-color: cornsilk;">
+        style="position: absolute; width:700px; height:250px; left:310px; bottom: 10px; opacity: 0.7; border: 1px solid rgb(78, 76, 76); background-color: cornsilk;">
     </div>
 
 
