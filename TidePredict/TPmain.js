@@ -45,7 +45,7 @@ map.on('click', function (e) {
 
     document.getElementById('lat').value = lat.toFixed(8);
     document.getElementById('lng').value = lng.toFixed(7);
-    document.getElementById('site').value = '标记位置';
+    // document.getElementById('site').value = '标记位置';
 
     var lng = document.getElementById('lng').value;
     var lat = document.getElementById('lat').value;
@@ -78,6 +78,13 @@ function predictClick() {
     var constituents = tableStringToArr('name amplitude	phase\n' + document.getElementById('canshu').value).objArr;
     console.log(constituents)
     run(constituents);
+    plot()
+}
+//(3)点击时间串预报潮位时，触发
+function predictClick_timeS() {
+    var constituents = tableStringToArr('name amplitude	phase\n' + document.getElementById('canshu').value).objArr;
+    console.log(constituents)
+    run_s(constituents);
     plot()
 }
 
@@ -194,7 +201,7 @@ function get_Consituate_baseon_coord(lng, lat) {
     return ConsituateStr;
 }
 
-//-----------------------调和曲线并出图
+//-----------------------单点调和曲线并出图
 function run(constituents) {
     var time_0 = new Date(document.getElementById('t1').value + ' 00:00');
     var time_1 = new Date(document.getElementById('t2').value + ' 00:00');
@@ -222,6 +229,29 @@ function run(constituents) {
     textstr = text0.join('\n');
 
     textstr = "DateTime,WaterLevel(m)\n" + textstr;
+    document.getElementById('text').innerHTML = textstr;
+}
+//-----------------------单点调和曲线并出图---时间序列字符串
+function run_s(constituents) {
+    var timeS=document.getElementById('timeS').value;
+    timeS = timeS.trim().split(/[\n]/); //按行分割
+    var phaseKey = 'phase';
+    // var phaseKey = 'phase_GMT';
+
+    var text0 = [];
+    textstr = '';
+
+    for (var i=0;i<timeS.length;i++){
+        var timep=new Date(timeS[i]+" GMT+0000");
+        console.log(timep)
+        var waterLevel = tidePredictor(constituents, { phaseKey: phaseKey }).getWaterLevelAtTime({
+            time: timep,
+        });
+        text0.push(timeS[i] +','+ formatDateTime(waterLevel.time) + ',' + waterLevel.level.toFixed(3));
+    }
+
+    textstr = text0.join('\n');
+    textstr = "DateTimeGMT+0,DateTimeGMT+8,WaterLevel(m)\n" + textstr;
     document.getElementById('text').innerHTML = textstr;
 }
 
@@ -266,7 +296,7 @@ function plot() {
         textstr,
         {
             // legend: 'always',
-            title: document.getElementById('site').value + '潮位预报曲线 |' + ' 时区:-0800 (东8区) | 潮高基准面:平均海平面',
+            title: '潮位预报曲线 |' + ' 时区:-0800 (东8区) | 潮高基准面:平均海平面',
             // showRoller: true,
             // rollPeriod: 14,
             // customBars: true,
