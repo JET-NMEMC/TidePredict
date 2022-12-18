@@ -27,8 +27,11 @@
         </p>
         <p>时间步长 <input type="number" style="width:130px;" id="s0" oninput="value=value.replace(/[^\d]/g,'')"
                 value="30">分钟</p>
+        <p>UTC时间<textarea name="timeS" id="timeS" cols="20" rows="2">2022-12-18 00:00&#10;2022-12-18 00:30
+        </textarea>
+        </p>
         <div style="width: 99%; background-color: rgb(78, 76, 76); text-align: center; color: beige;">单点模式</div>
-        <p>潮位站名 <input type="text" style="width:130px;" id="site" value="Tingdao"></p>
+        <!-- <p>潮位站名 <input type="text" style="width:130px;" id="site" value="Tingdao"></p> -->
         <p>坐标经度 <input type="text" style="width:130px;" id="lng" value="120.37091" onchange="coordChange()"></p>
         <p>坐标纬度 <input type="text" style="width:130px;" id="lat" value="36.051757" onchange="coordChange()"></p>
         <p>
@@ -41,6 +44,7 @@
             <br>
             <button style="height: 30px; width: 80px;" onclick="predictClick()">预报潮位</button>
             <button style="height: 30px; width: 80px;" onclick="export_csv(textstr, 'tideHeight')">导出潮位</button>
+            <button style="height: 30px; width: 90px;" onclick="predictClick_timeS()">UTC时间串</button>
         </p>
 
         <p>
