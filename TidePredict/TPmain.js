@@ -11,11 +11,12 @@ for (var i = 0; i < cstlist.length; i++) {
 
 //-------------------------设置地图
 var map = L.map('map', { zoomControl: false, }).setView([31.59, 120.29], 7);
-L.tileLayer('http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 12,
-    minZoom: 4,
-    pane: 'overlayPane'
+L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    // maxZoom: 18,
+    attribution: "&copy; Esri"
 }).addTo(map);
+
 
 //-------------------------设置时间
 var now = new Date();
